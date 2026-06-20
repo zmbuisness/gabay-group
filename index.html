@@ -1391,44 +1391,38 @@
       : 'rgba(5,5,5,0.7)';
   }, { passive: true });
 
-  // ─── Form submit → Web3Forms ─────────────────────────
-  async function handleSubmit(e) {
+  // ─── Form submit → WhatsApp ──────────────────────────
+  function handleSubmit(e) {
     e.preventDefault();
     const form = e.target;
+
+    const fname   = form.querySelector('#fname').value.trim();
+    const lname   = form.querySelector('#lname').value.trim();
+    const phone   = form.querySelector('#phone').value.trim();
+    const email   = form.querySelector('#email').value.trim();
+    const subject = form.querySelector('#subject-field').value.trim();
+    const message = form.querySelector('#message').value.trim();
+
+    let text = `שלום בני, פנייה חדשה מהאתר 👋\n\n`;
+    text += `*שם:* ${fname} ${lname}\n`;
+    text += `*טלפון:* ${phone}\n`;
+    if (email)   text += `*אימייל:* ${email}\n`;
+    if (subject) text += `*נושא:* ${subject}\n`;
+    if (message) text += `*הודעה:* ${message}\n`;
+
+    const encoded = encodeURIComponent(text);
+    window.open(`https://wa.me/972544000400?text=${encoded}`, '_blank');
+
     const btn = form.querySelector('.form-submit');
-
-    btn.textContent = 'שולח...';
+    btn.textContent = '✓ מעביר לוואטסאפ...';
+    btn.style.background = 'linear-gradient(135deg,#4ade80,#22c55e)';
     btn.disabled = true;
-
-    try {
-      const data = new FormData(form);
-      const res = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        body: data
-      });
-      const json = await res.json();
-
-      if (json.success) {
-        btn.textContent = '✓ הפנייה נשלחה בהצלחה!';
-        btn.style.background = 'linear-gradient(135deg,#4ade80,#22c55e)';
-        form.reset();
-        setTimeout(() => {
-          btn.textContent = 'שלח פנייה ←';
-          btn.style.background = '';
-          btn.disabled = false;
-        }, 4000);
-      } else {
-        throw new Error(json.message);
-      }
-    } catch (err) {
-      btn.textContent = 'שגיאה בשליחה, נסה שוב';
-      btn.style.background = 'linear-gradient(135deg,#f87171,#ef4444)';
+    setTimeout(() => {
+      btn.textContent = 'שלח פנייה ←';
+      btn.style.background = '';
       btn.disabled = false;
-      setTimeout(() => {
-        btn.textContent = 'שלח פנייה ←';
-        btn.style.background = '';
-      }, 3000);
-    }
+      form.reset();
+    }, 3000);
   }
 
   // ─── Counter animation ───────────────────────────────
