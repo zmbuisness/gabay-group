@@ -1306,28 +1306,33 @@
       </div>
 
       <div class="reveal reveal-delay-2">
-        <form class="contact-form" onsubmit="handleSubmit(event)">
+        <form class="contact-form" id="contactForm" onsubmit="handleSubmit(event)">
+          <input type="hidden" name="access_key" value="70462549-f0af-4f98-8eb5-74ad584f5dbb" />
+          <input type="hidden" name="subject" value="פנייה חדשה מהאתר - בני גבאי גרופ נכסים" />
+          <input type="hidden" name="from_name" value="אתר בני גבאי גרופ נכסים" />
+          <input type="checkbox" name="botcheck" style="display:none;" />
+
           <div class="form-row">
             <div class="form-group">
               <label for="fname">שם פרטי *</label>
-              <input type="text" id="fname" placeholder="ישראל" required />
+              <input type="text" id="fname" name="שם פרטי" placeholder="ישראל" required />
             </div>
             <div class="form-group">
               <label for="lname">שם משפחה *</label>
-              <input type="text" id="lname" placeholder="ישראלי" required />
+              <input type="text" id="lname" name="שם משפחה" placeholder="ישראלי" required />
             </div>
           </div>
           <div class="form-group">
             <label for="phone">טלפון *</label>
-            <input type="tel" id="phone" placeholder="050-000-0000" required />
+            <input type="tel" id="phone" name="טלפון" placeholder="050-000-0000" required />
           </div>
           <div class="form-group">
             <label for="email">אימייל</label>
-            <input type="email" id="email" placeholder="you@example.com" />
+            <input type="email" id="email" name="email" placeholder="you@example.com" />
           </div>
           <div class="form-group">
-            <label for="subject">נושא הפנייה</label>
-            <select id="subject">
+            <label for="subject-field">נושא הפנייה</label>
+            <select id="subject-field" name="נושא הפנייה">
               <option value="">בחר נושא...</option>
               <option>רכישת דירה</option>
               <option>מכירת דירה</option>
@@ -1338,7 +1343,7 @@
           </div>
           <div class="form-group">
             <label for="message">הודעה</label>
-            <textarea id="message" placeholder="ספר לנו על הנכס שאתה מחפש..."></textarea>
+            <textarea id="message" name="הודעה" placeholder="ספר לנו על הנכס שאתה מחפש..."></textarea>
           </div>
           <button type="submit" class="form-submit">שלח פנייה ←</button>
         </form>
@@ -1386,19 +1391,44 @@
       : 'rgba(5,5,5,0.7)';
   }, { passive: true });
 
-  // ─── Form submit ─────────────────────────────────────
-  function handleSubmit(e) {
+  // ─── Form submit → Web3Forms ─────────────────────────
+  async function handleSubmit(e) {
     e.preventDefault();
-    const btn = e.target.querySelector('.form-submit');
-    btn.textContent = '✓ הפנייה נשלחה בהצלחה!';
-    btn.style.background = 'linear-gradient(135deg,#4ade80,#22c55e)';
+    const form = e.target;
+    const btn = form.querySelector('.form-submit');
+
+    btn.textContent = 'שולח...';
     btn.disabled = true;
-    setTimeout(() => {
-      btn.textContent = 'שלח פנייה ←';
-      btn.style.background = '';
+
+    try {
+      const data = new FormData(form);
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        body: data
+      });
+      const json = await res.json();
+
+      if (json.success) {
+        btn.textContent = '✓ הפנייה נשלחה בהצלחה!';
+        btn.style.background = 'linear-gradient(135deg,#4ade80,#22c55e)';
+        form.reset();
+        setTimeout(() => {
+          btn.textContent = 'שלח פנייה ←';
+          btn.style.background = '';
+          btn.disabled = false;
+        }, 4000);
+      } else {
+        throw new Error(json.message);
+      }
+    } catch (err) {
+      btn.textContent = 'שגיאה בשליחה, נסה שוב';
+      btn.style.background = 'linear-gradient(135deg,#f87171,#ef4444)';
       btn.disabled = false;
-      e.target.reset();
-    }, 4000);
+      setTimeout(() => {
+        btn.textContent = 'שלח פנייה ←';
+        btn.style.background = '';
+      }, 3000);
+    }
   }
 
   // ─── Counter animation ───────────────────────────────
